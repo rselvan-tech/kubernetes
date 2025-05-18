@@ -1,0 +1,24 @@
+Workloads & Scheduling
+Q1. create a pod named ku001-web with image = redis
+and container name should be cache
+
+navaras2012@BlueBoy-HP:~$ kubectl run ku001-web --image=redis --dry-run=client -o yaml > ku001.yaml
+
+navaras2012@BlueBoy-HP:~$ vi ku001.yaml
+navaras2012@BlueBoy-HP:~$
+navaras2012@BlueBoy-HP:~$ kubectl create -f ku001.yaml
+
+navaras2012@BlueBoy-HP:~$ k get pods
+NAME        READY   STATUS    RESTARTS   AGE
+ku001-web   1/1     Running   0          56s
+
+navaras2012@BlueBoy-HP:~$ cat ku001.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ku001-web
+spec:
+  containers:
+  - image: redis
+    name: cache
+navaras2012@BlueBoy-HP:~$

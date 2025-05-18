@@ -1,0 +1,3 @@
+Workloads & Scheduling
+Q2. create a pod named kuz001 with image = nginx in the production namespace, you can create the namespace if it is not exist
+

@@ -1,0 +1,35 @@
+Node Affinity
+
+Q 47. In the Kubernetes namespace prod, create a Pod named imp-pod that runs the image nginx:1.26.0.
+
+Configure node affinity so that the pod prefers to be scheduled on a node with the label az=zone1, assigning it a weight of 80.
+
+Additionally, make the pod also prefer a node labeled az=zone2 with a weight of 20.
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: imp-pod
+  namespace: prod   
+spec:
+  containers:
+  - image: nginx:1.26.0
+    name: imp-pod
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 80
+        preference:
+          matchExpressions:
+          - key: az
+            operator: In
+            values:
+            - zone1
+      - weight: 20
+        preference:
+          matchExpressions:
+          - key: az
+            operator: In
+            values:
+            - zone2
