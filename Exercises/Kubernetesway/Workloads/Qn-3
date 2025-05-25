@@ -1,0 +1,30 @@
+Workloads & Scheduling
+Q3. Create a pod named kub001 with below
+specifications
+label env=test
+Image= nginx
+Namespace = develop.
+
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get ns
+NAME              STATUS   AGE
+default           Active   10d
+kube-node-lease   Active   10d
+kube-public       Active   10d
+kube-system       Active   10d
+navaras2012@BlueBoy-HP:~/k8s$ kubectl create ns develop
+namespace/develop created
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ kubectl run kub001 --image=nginx -l="env=test" -n develop
+pod/kub001 created
+navaras2012@BlueBoy-HP:~/k8s$
+
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get pod -n develop --show-labels
+NAME     READY   STATUS    RESTARTS   AGE   LABELS
+kub001   1/1     Running   0          90s   env=test
+navaras2012@BlueBoy-HP:~/k8s$
+
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get pods -n develop -o custom-columns=NAME:.spec.containers[0].name,IMAGE:.spec.containers[0].image,LABELS:.metadata.l
+abels
+NAME     IMAGE   LABELS
+kub001   nginx   map[env:test]
+navaras2012@BlueBoy-HP:~/k8s$

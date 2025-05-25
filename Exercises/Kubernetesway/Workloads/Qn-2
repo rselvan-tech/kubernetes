@@ -1,0 +1,27 @@
+Workloads & Scheduling
+Q2. create a pod named kuz001 with image = nginx in the production namespace, you can create the namespace if it is not exist
+
+
+Method-1 :-
+
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get ns
+NAME              STATUS   AGE
+default           Active   10d
+kube-node-lease   Active   10d
+kube-public       Active   10d
+kube-system       Active   10d
+mem-example       Active   10d
+prod              Active   3d22h
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ kubectl create ns production
+namespace/production created
+navaras2012@BlueBoy-HP:~/k8s$ kubectl run kuz001 --image=nginx --namespace=production
+pod/kuz001 created
+navaras2012@BlueBoy-HP:~/k8s$
+
+Method-2 :-
+
+create a yaml file
+ - add 'namespace' parameter in metadata
+
+

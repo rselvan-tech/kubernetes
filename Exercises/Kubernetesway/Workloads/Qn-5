@@ -1,0 +1,73 @@
+Workloads & Scheduling
+Q6. Schedule a pod as following
+Name = kc001-test
+Image= nginx
+Node Selector disk=ssd
+
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get nodes --show-labels
+NAME           STATUS   ROLES           AGE   VERSION   LABELS
+minikube       Ready    control-plane   10d   v1.32.0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=minikube,kubernetes.io/os=linux,minikube.k8s.io/commit=dd5d320e41b5451cdf3c01891bc4e13d189586ed-dirty,minikube.k8s.io/name=minikube,minikube.k8s.io/primary=true,minikube.k8s.io/updated_at=2025_05_07T15_53_25_0700,minikube.k8s.io/version=v1.35.0,node-role.kubernetes.io/control-plane=,node.kubernetes.io/exclude-from-external-load-balancers=
+minikube-m02   Ready    <none>          10d   v1.32.0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=minikube-m02,kubernetes.io/os=linux,minikube.k8s.io/commit=dd5d320e41b5451cdf3c01891bc4e13d189586ed-dirty,minikube.k8s.io/name=minikube,minikube.k8s.io/primary=false,minikube.k8s.io/updated_at=2025_05_07T15_53_57_0700,minikube.k8s.io/version=v1.35.0
+minikube-m03   Ready    <none>          10d   v1.32.0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=minikube-m03,kubernetes.io/os=linux,minikube.k8s.io/commit=dd5d320e41b5451cdf3c01891bc4e13d189586ed-dirty,minikube.k8s.io/name=minikube,minikube.k8s.io/primary=false,minikube.k8s.io/updated_at=2025_05_07T15_54_27_0700,minikube.k8s.io/version=v1.35.0
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ kubectl describe node minikube | grep -i taint
+Taints:             <none>
+navaras2012@BlueBoy-HP:~/k8s$ kubectl describe node minikube-m02 | grep -i taint
+Taints:             <none>
+navaras2012@BlueBoy-HP:~/k8s$ kubectl describe node minikube-m03 | grep -i taint
+Taints:             <none>
+navaras2012@BlueBoy-HP:~/k8s$
+
+
+navaras2012@BlueBoy-HP:~/k8s$ kubectl label node minikube disk=ssd
+node/minikube labeled
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get nodes --show-labels
+NAME           STATUS   ROLES           AGE   VERSION   LABELS
+minikube       Ready    control-plane   10d   v1.32.0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,disk=ssd,kubernetes.io/arch=amd64,kubernetes.io/hostname=minikube,kubernetes.io/os=linux,minikube.k8s.io/commit=dd5d320e41b5451cdf3c01891bc4e13d189586ed-dirty,minikube.k8s.io/name=minikube,minikube.k8s.io/primary=true,minikube.k8s.io/updated_at=2025_05_07T15_53_25_0700,minikube.k8s.io/version=v1.35.0,node-role.kubernetes.io/control-plane=,node.kubernetes.io/exclude-from-external-load-balancers=
+minikube-m02   Ready    <none>          10d   v1.32.0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=minikube-m02,kubernetes.io/os=linux,minikube.k8s.io/commit=dd5d320e41b5451cdf3c01891bc4e13d189586ed-dirty,minikube.k8s.io/name=minikube,minikube.k8s.io/primary=false,minikube.k8s.io/updated_at=2025_05_07T15_53_57_0700,minikube.k8s.io/version=v1.35.0
+minikube-m03   Ready    <none>          10d   v1.32.0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=minikube-m03,kubernetes.io/os=linux,minikube.k8s.io/commit=dd5d320e41b5451cdf3c01891bc4e13d189586ed-dirty,minikube.k8s.io/name=minikube,minikube.k8s.io/primary=false,minikube.k8s.io/updated_at=2025_05_07T15_54_27_0700,minikube.k8s.io/version=v1.35.0
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ kubectl run kc001-test --image=nginx --dry-run=client -o yaml > kc001.yaml
+navaras2012@BlueBoy-HP:~/k8s$ vi kc001.yaml
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ kubectl create -f kc001.yaml
+pod/kc001-test created
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get pods -o wide
+NAME         READY   STATUS              RESTARTS   AGE   IP       NODE       NOMINATED NODE   READINESS GATES
+kc001-test   0/1     ContainerCreating   0          11s   <none>   minikube   <none>           <none>
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ cat kc001.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kc001-test
+spec:
+  containers:
+  - image: nginx
+    name: kc001-test
+  nodeSelector:
+    disk: ssd
+navaras2012@BlueBoy-HP:~/k8s$
+
+
+Remove label
+
+navaras2012@BlueBoy-HP:~/k8s$ kubectl label node minikube disk-
+node/minikube unlabeled
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get pods -o wide
+NAME         READY   STATUS    RESTARTS   AGE     IP           NODE       NOMINATED NODE   READINESS GATES
+kc001-test   1/1     Running   0          3m26s   10.244.0.3   minikube   <none>           <none>
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get nodes --show-labels
+NAME           STATUS   ROLES           AGE   VERSION   LABELS
+minikube       Ready    control-plane   10d   v1.32.0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=minikube,kubernetes.io/os=linux,minikube.k8s.io/commit=dd5d320e41b5451cdf3c01891bc4e13d189586ed-dirty,minikube.k8s.io/name=minikube,minikube.k8s.io/primary=true,minikube.k8s.io/updated_at=2025_05_07T15_53_25_0700,minikube.k8s.io/version=v1.35.0,node-role.kubernetes.io/control-plane=,node.kubernetes.io/exclude-from-external-load-balancers=
+minikube-m02   Ready    <none>          10d   v1.32.0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=minikube-m02,kubernetes.io/os=linux,minikube.k8s.io/commit=dd5d320e41b5451cdf3c01891bc4e13d189586ed-dirty,minikube.k8s.io/name=minikube,minikube.k8s.io/primary=false,minikube.k8s.io/updated_at=2025_05_07T15_53_57_0700,minikube.k8s.io/version=v1.35.0
+minikube-m03   Ready    <none>          10d   v1.32.0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=minikube-m03,kubernetes.io/os=linux,minikube.k8s.io/commit=dd5d320e41b5451cdf3c01891bc4e13d189586ed-dirty,minikube.k8s.io/name=minikube,minikube.k8s.io/primary=false,minikube.k8s.io/updated_at=2025_05_07T15_54_27_0700,minikube.k8s.io/version=v1.35.0
+navaras2012@BlueBoy-HP:~/k8s$
+

@@ -1,0 +1,68 @@
+Workloads & Scheduling
+Q4. Create a pod named kub002 with below specifications
+environment variable env=dev
+Image= redis
+Namespace = develop
+
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get ns
+NAME              STATUS   AGE
+default           Active   10d
+kube-node-lease   Active   10d
+kube-public       Active   10d
+kube-system       Active   10d
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ kubectl create ns develop
+namespace/develop created
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ kubectl run kub002 --image=redis -n develop --env="env=dev"
+pod/kub002 created
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get pod -o wide
+No resources found in default namespace.
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get pod -o wide -n develop
+NAME     READY   STATUS    RESTARTS   AGE   IP           NODE           NOMINATED NODE   READINESS GATES
+kub002   1/1     Running   0          29s   10.244.1.4   minikube-m02   <none>           <none>
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ kubectl exec kub002 -n develop -- printenv
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+HOSTNAME=kub002
+env=dev
+KUBERNETES_SERVICE_HOST=10.96.0.1
+KUBERNETES_SERVICE_PORT=443
+KUBERNETES_SERVICE_PORT_HTTPS=443
+KUBERNETES_PORT=tcp://10.96.0.1:443
+KUBERNETES_PORT_443_TCP=tcp://10.96.0.1:443
+KUBERNETES_PORT_443_TCP_PROTO=tcp
+KUBERNETES_PORT_443_TCP_PORT=443
+KUBERNETES_PORT_443_TCP_ADDR=10.96.0.1
+REDIS_DOWNLOAD_URL=https://github.com/redis/redis/archive/refs/tags/8.0.1.tar.gz
+REDIS_DOWNLOAD_SHA=5e347d3532ff15bb888a78d851e87cf5cc1956edd32b5d4a0cac3220da0a5a0b
+HOME=/root
+navaras2012@BlueBoy-HP:~/k8s$
+
+
+navaras2012@BlueBoy-HP:~/k8s$ kubectl describe pod kub002 -n develop
+...
+...
+...
+Containers:
+  kub002:
+    Container ID:   docker://64b82afd55969d6541ad427c7d637e3454da3afe0aefb7fdba8e925da729f568
+    Image:          redis
+    Image ID:       docker-pullable://redis@sha256:1b7c17f650602d97a10724d796f45f0b5250d47ee5ba02f28de89f8a1531f3ce
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Sun, 18 May 2025 05:51:02 -0400
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      env:  dev
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-d26dd (ro)
+...
+...
+...
+navaras2012@BlueBoy-HP:~/k8s$

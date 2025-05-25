@@ -1,0 +1,5 @@
+Pod Admission Controls
+Q 46. In the kube-prod namespace, configure pod admission controls to enforce default resource requests and limits for containers.
+The following conditions must be met:
+In the absence of specified CPU or memory requests and limits, a container should be assigned default values of 200m CPU and 100Mi memory for requests, and 400m CPU and 200Mi memory for limits.
+Prevent any container in this namespace from requesting more than 500Mi of memory.

@@ -1,0 +1,21 @@
+Cluster Certificate Management
+Read out certificate expiration
+Using kubeadm, read out the expiration date of the apiserver certificate and write it into /root/apiserver-expiration .
+
+
+Cluster Certificate Management
+Renew certificates
+Using kubeadm, renew the certificates of the apiserver and scheduler.conf .
+
+
+Tip
+
+kubeadm certs renew
+
+Solution
+
+kubeadm certs renew apiserver
+
+kubeadm certs renew scheduler.conf
+
+kubeadm certs check-expiration 
