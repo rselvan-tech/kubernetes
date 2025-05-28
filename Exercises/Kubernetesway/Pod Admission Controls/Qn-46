@@ -3,3 +3,91 @@ Q 46. In the kube-prod namespace, configure pod admission controls to enforce de
 The following conditions must be met:
 In the absence of specified CPU or memory requests and limits, a container should be assigned default values of 200m CPU and 100Mi memory for requests, and 400m CPU and 200Mi memory for limits.
 Prevent any container in this namespace from requesting more than 500Mi of memory.
+
+Solution :-
+
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: resource-limit
+  namespace: kube-prod
+spec:
+  limits:
+  - default: # this section defines default limits
+      cpu: 400m
+      memory: 200Mi
+    defaultRequest: # this section defines default requests
+      cpu: 200m
+      memory: 100Mi
+    max: # max and min define the limit range
+      memory: 500Mi
+    type: Container
+
+
+(1)
+navaras2012@BlueBoy-HP:~/k8s$ kubectl create ns kube-prod
+namespace/kube-prod created
+navaras2012@BlueBoy-HP:~/k8s$
+
+(2)
+navaras2012@BlueBoy-HP:~/k8s$ vi resource-limit.yaml
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ kubectl create -f resource-limit.yaml
+limitrange/resource-limit created
+navaras2012@BlueBoy-HP:~/k8s$
+
+(3)
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get limitrange -n kube-prod
+NAME             CREATED AT
+resource-limit   2025-05-25T12:30:12Z
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ kubectl describe limitrange resource-limit -n kube-prod
+Name:       resource-limit
+Namespace:  kube-prod
+Type        Resource  Min  Max    Default Request  Default Limit  Max Limit/Request Ratio
+----        --------  ---  ---    ---------------  -------------  -----------------------
+Container   memory    -    500Mi  100Mi            200Mi          -
+Container   cpu       -    -      200m             400m           -
+navaras2012@BlueBoy-HP:~/k8s$
+
+
+(4)
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ kubectl run nginx --image=nginx -n kube-prod
+pod/nginx created
+navaras2012@BlueBoy-HP:~/k8s$
+
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get pod -n kube-prod -w
+NAME    READY   STATUS              RESTARTS   AGE
+nginx   0/1     ContainerCreating   0          18s
+nginx   1/1     Running             0          25s
+^Cnavaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ kubectl describe pod nginx -n kube-prod
+...
+...
+...
+Containers:
+  nginx:
+    Container ID:   docker://a74523252355cf492425bdf07084ded432198f3688a3c1a3f3c3683208d39487
+    Image:          nginx
+    Image ID:       docker-pullable://nginx@sha256:fb39280b7b9eba5727c884a3c7810002e69e8f961cc373b89c92f14961d903a0
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Sun, 25 May 2025 08:31:32 -0400
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     400m
+      memory:  200Mi
+    Requests:
+      cpu:        200m
+      memory:     100Mi
+    Environment:  <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-4xcz5 (ro)
+Conditions:
+...
+...
