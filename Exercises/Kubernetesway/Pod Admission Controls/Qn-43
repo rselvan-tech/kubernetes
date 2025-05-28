@@ -1,0 +1,100 @@
+Resource Quotas
+Q 43. You are responsible for managing resources in a Kubernetes
+cluster. Create a namespace called kube-dev and restrict its total memory usage to a maximum of 5 GiB
+
+Solution:-
+=========
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: quota-memory
+  namespace: kube-dev
+spec:
+  hard:
+    limits.memory: "5Gi"
+
+
+(1) Create namespace
+
+(2)
+navaras2012@BlueBoy-HP:~/k8s$ vi quota-memory.yaml
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ kubectl apply -f quota-memory.yaml
+resourcequota/quota-memory created
+navaras2012@BlueBoy-HP:~/k8s$
+
+(3)
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get quota -n kube-dev
+NAME           AGE   REQUEST           LIMIT
+quota-memory   13s                     limits.memory: 0/5Gi
+quota-pod      19m   count/pods: 5/5
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ kubectl describe quota quota-memory -n kube-dev
+Name:          quota-memory
+Namespace:     kube-dev
+Resource       Used  Hard
+--------       ----  ----
+limits.memory  0     5Gi
+navaras2012@BlueBoy-HP:~/k8s$
+
+(4) Verify
+
+navaras2012@BlueBoy-HP:~/k8s$ kubectl run nginx --image=nginx -n kube-dev
+Error from server (Forbidden): pods "nginx" is forbidden: failed quota: quota-memory: must specify limits.memory for: nginx
+navaras2012@BlueBoy-HP:~/k8s$
+
+navaras2012@BlueBoy-HP:~/k8s$ cat nginx.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx
+  name: nginx
+  namespace: kube-dev
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    resources:
+      limits:
+        memory: "6Gi"
+navaras2012@BlueBoy-HP:~/k8s$
+
+navaras2012@BlueBoy-HP:~/k8s$ kubectl apply -f nginx.yaml
+Error from server (Forbidden): error when creating "nginx.yaml": pods "nginx" is forbidden: exceeded quota: quota-memory, requested: limits.memory=6Gi, used: limits.memory=0, limited: limits.memory=5Gi
+navaras2012@BlueBoy-HP:~/k8s$
+
+navaras2012@BlueBoy-HP:~/k8s$ cat nginx.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx
+  name: nginx
+  namespace: kube-dev
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    resources:
+      limits:
+        memory: "5Gi"
+navaras2012@BlueBoy-HP:~/k8s$
+
+navaras2012@BlueBoy-HP:~/k8s$ kubectl apply -f nginx.yaml
+pod/nginx created
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get quota -n kube-dev
+NAME           AGE   REQUEST           LIMIT
+quota-memory   10m                     limits.memory: 5Gi/5Gi
+quota-pod      29m   count/pods: 1/5
+navaras2012@BlueBoy-HP:~/k8s$ kubectl describe quota quota-memory -n kube-dev
+Name:          quota-memory
+Namespace:     kube-dev
+Resource       Used  Hard
+--------       ----  ----
+limits.memory  5Gi   5Gi
+navaras2012@BlueBoy-HP:~/k8s$
+
+

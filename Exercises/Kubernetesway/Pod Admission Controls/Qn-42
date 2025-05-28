@@ -1,0 +1,116 @@
+Resource Quotas
+Q 42. You are tasked with setting up a Kubernetes namespace named "kube-dev"for an application team. The team should only be allowed to create a maximum of 5 pods in their namespace
+
+
+Solution:-
+=========
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: quota-pod
+  namespace: kube-dev
+spec:
+  hard:
+    count/pods: 5
+
+(1)
+navaras2012@BlueBoy-HP:~/k8s$ kubectl create ns kube-dev
+namespace/kube-dev created
+navaras2012@BlueBoy-HP:~/k8s$
+
+(2)
+navaras2012@BlueBoy-HP:~/k8s$ vi quota-pod.yaml
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$
+navaras2012@BlueBoy-HP:~/k8s$ kubectl apply -f quota-pod.yaml
+resourcequota/quota-pod created
+navaras2012@BlueBoy-HP:~/k8s$
+
+(3)
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get resourcequota -n kube-dev
+NAME        AGE   REQUEST           LIMIT
+quota-pod   20s   count/pods: 0/5
+navaras2012@BlueBoy-HP:~/k8s$
+
+navaras2012@BlueBoy-HP:~/k8s$ kubectl describe quota quota-pod -n kube-dev
+Name:       quota-pod
+Namespace:  kube-dev
+Resource    Used  Hard
+--------    ----  ----
+count/pods  0     5
+navaras2012@BlueBoy-HP:~/k8s$
+
+
+(4)
+navaras2012@BlueBoy-HP:~/k8s$ kubectl create deployment nginx --image=nginx --replicas=6 -n kube-dev
+deployment.apps/nginx created
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get deployments
+No resources found in default namespace.
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get deployments -n kube-dev
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+nginx   2/6     5            2           14s
+navaras2012@BlueBoy-HP:~/k8s$ kubectl get pods -n kube-dev
+NAME                     READY   STATUS    RESTARTS   AGE
+nginx-5869d7778c-4t7qv   1/1     Running   0          32s
+nginx-5869d7778c-jcbqx   1/1     Running   0          32s
+nginx-5869d7778c-pxcbt   1/1     Running   0          32s
+nginx-5869d7778c-x5n89   1/1     Running   0          32s
+nginx-5869d7778c-zzbwb   1/1     Running   0          32s
+navaras2012@BlueBoy-HP:~/k8s$ kubectl describe quota quota-pod -n kube-dev
+Name:       quota-pod
+Namespace:  kube-dev
+Resource    Used  Hard
+--------    ----  ----
+count/pods  5     5
+navaras2012@BlueBoy-HP:~/k8s$
+
+(5)
+navaras2012@BlueBoy-HP:~/k8s$ kubectl describe rs nginx-5869d7778c -n kube-dev
+Name:           nginx-5869d7778c
+Namespace:      kube-dev
+Selector:       app=nginx,pod-template-hash=5869d7778c
+Labels:         app=nginx
+                pod-template-hash=5869d7778c
+Annotations:    deployment.kubernetes.io/desired-replicas: 6
+                deployment.kubernetes.io/max-replicas: 8
+                deployment.kubernetes.io/revision: 1
+Controlled By:  Deployment/nginx
+Replicas:       5 current / 6 desired
+Pods Status:    5 Running / 0 Waiting / 0 Succeeded / 0 Failed
+Pod Template:
+  Labels:  app=nginx
+           pod-template-hash=5869d7778c
+  Containers:
+   nginx:
+    Image:         nginx
+    Port:          <none>
+    Host Port:     <none>
+    Environment:   <none>
+    Mounts:        <none>
+  Volumes:         <none>
+  Node-Selectors:  <none>
+  Tolerations:     <none>
+Conditions:
+  Type             Status  Reason
+  ----             ------  ------
+  ReplicaFailure   True    FailedCreate
+Events:
+  Type     Reason            Age                  From                   Message
+  ----     ------            ----                 ----                   -------
+  Normal   SuccessfulCreate  117s                 replicaset-controller  Created pod: nginx-5869d7778c-jcbqx
+  Normal   SuccessfulCreate  117s                 replicaset-controller  Created pod: nginx-5869d7778c-pxcbt
+  Normal   SuccessfulCreate  117s                 replicaset-controller  Created pod: nginx-5869d7778c-x5n89
+  Normal   SuccessfulCreate  117s                 replicaset-controller  Created pod: nginx-5869d7778c-zzbwb
+  Warning  FailedCreate      117s                 replicaset-controller  Error creating: pods "nginx-5869d7778c-hqpld" is forbidden: exceeded quota: quota-pod, requested: count/pods=1, used: count/pods=5, limited: count/pods=5
+  Normal   SuccessfulCreate  117s                 replicaset-controller  Created pod: nginx-5869d7778c-4t7qv
+  Warning  FailedCreate      117s                 replicaset-controller  Error creating: pods "nginx-5869d7778c-68pst" is forbidden: exceeded quota: quota-pod, requested: count/pods=1, used: count/pods=5, limited: count/pods=5
+  Warning  FailedCreate      117s                 replicaset-controller  Error creating: pods "nginx-5869d7778c-grvxt" is forbidden: exceeded quota: quota-pod, requested: count/pods=1, used: count/pods=5, limited: count/pods=5
+  Warning  FailedCreate      117s                 replicaset-controller  Error creating: pods "nginx-5869d7778c-dfdgf" is forbidden: exceeded quota: quota-pod, requested: count/pods=1, used: count/pods=5, limited: count/pods=5
+  Warning  FailedCreate      117s                 replicaset-controller  Error creating: pods "nginx-5869d7778c-7t4xm" is forbidden: exceeded quota: quota-pod, requested: count/pods=1, used: count/pods=5, limited: count/pods=5
+  Warning  FailedCreate      117s                 replicaset-controller  Error creating: pods "nginx-5869d7778c-wr7c8" is forbidden: exceeded quota: quota-pod, requested: count/pods=1, used: count/pods=5, limited: count/pods=5
+  Warning  FailedCreate      117s                 replicaset-controller  Error creating: pods "nginx-5869d7778c-9wg2r" is forbidden: exceeded quota: quota-pod, requested: count/pods=1, used: count/pods=5, limited: count/pods=5
+  Warning  FailedCreate      117s                 replicaset-controller  Error creating: pods "nginx-5869d7778c-hjwkx" is forbidden: exceeded quota: quota-pod, requested: count/pods=1, used: count/pods=5, limited: count/pods=5
+  Warning  FailedCreate      116s                 replicaset-controller  Error creating: pods "nginx-5869d7778c-csht2" is forbidden: exceeded quota: quota-pod, requested: count/pods=1, used: count/pods=5, limited: count/pods=5
+  Warning  FailedCreate      94s (x14 over 115s)  replicaset-controller  (combined from similar events): Error creating: pods "nginx-5869d7778c-p7pqz" is forbidden: exceeded quota: quota-pod, requested: count/pods=1, used: count/pods=5, limited: count/pods=5
+navaras2012@BlueBoy-HP:~/k8s$
