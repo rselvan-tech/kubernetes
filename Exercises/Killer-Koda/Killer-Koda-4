@@ -1,0 +1,130 @@
+Access ConfigMaps in Pod
+
+Create a Pod named pod1 of image nginx:alpine
+Make key tree of ConfigMap trauerweide available as environment variable TREE1
+Mount all keys of ConfigMap birke as volume. The files should be available under /etc/birke/*
+Test env+volume access in the running Pod
+
+
+Solution :-
+==========
+
+(1) 
+controlplane:~$ kubectl describe configmap trauerweide
+Name:         trauerweide
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Data
+====
+tree:
+----
+trauerweide
+
+
+BinaryData
+====
+
+Events:  <none>
+controlplane:~$
+
+(2)
+controlplane:~$ kubectl describe configmap birke
+Name:         birke
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Data
+====
+department:
+----
+park
+
+level:
+----
+3
+
+tree:
+----
+birke
+
+
+BinaryData
+====
+
+Events:  <none>
+controlplane:~$
+
+
+(3)
+controlplane:~$ kubectl run pod1 --image=nginx:alpine --dry-run=client -o yaml > pod1.yaml
+controlplane:~$ vi pod1.yaml 
+controlplane:~$
+controlplane:~$ cat pod1.yaml 
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+  name: pod1
+spec:
+  containers:
+  - image: nginx:alpine
+    name: pod1
+    env:
+      - name: TREE1
+        valueFrom:
+          configMapKeyRef:
+            name: trauerweide
+            key: tree 
+    volumeMounts:
+       - name: config
+         mountPath: /etc/birke
+         readOnly: true
+  
+  volumes:
+    - name: config
+      configMap:
+        name: birke      
+controlplane:~$
+
+
+Verification :-
+==============
+
+controlplane:~$ k get pod
+NAME   READY   STATUS    RESTARTS   AGE
+pod1   1/1     Running   0          11s
+controlplane:~$ k exec -it pod1 -- printenv
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+HOSTNAME=pod1
+NGINX_VERSION=1.27.5
+PKG_RELEASE=1
+DYNPKG_RELEASE=1
+NJS_VERSION=0.8.10
+NJS_RELEASE=1
+TREE1=trauerweide
+KUBERNETES_SERVICE_HOST=10.96.0.1
+KUBERNETES_SERVICE_PORT=443
+KUBERNETES_SERVICE_PORT_HTTPS=443
+KUBERNETES_PORT=tcp://10.96.0.1:443
+KUBERNETES_PORT_443_TCP=tcp://10.96.0.1:443
+KUBERNETES_PORT_443_TCP_PROTO=tcp
+KUBERNETES_PORT_443_TCP_PORT=443
+KUBERNETES_PORT_443_TCP_ADDR=10.96.0.1
+TERM=xterm
+HOME=/root
+controlplane:~$ k exec -it pod1 -- ls -l /etc/birke
+total 0
+lrwxrwxrwx    1 root     root            17 Jun  3 07:55 department -> ..data/department
+lrwxrwxrwx    1 root     root            12 Jun  3 07:55 level -> ..data/level
+lrwxrwxrwx    1 root     root            11 Jun  3 07:55 tree -> ..data/tree
+controlplane:~$ k exec -it pod1 -- cat /etc/birke/department
+park
+controlplane:~$ k exec -it pod1 -- cat /etc/birke/level     
+3
+controlplane:~$ k exec -it pod1 -- cat /etc/birke/tree 
+birke
+controlplane:~$ 
+controlplane:~$
