@@ -1,0 +1,89 @@
+Problem :
+=========
+There are existing Pods in Namespace space1 and space2 .
+
+We need a new NetworkPolicy named np that restricts all Pods in Namespace space1 to only have outgoing traffic to Pods in Namespace space2 . Incoming traffic not affected.
+
+We also need a new NetworkPolicy named np that restricts all Pods in Namespace space2 to only have incoming traffic from Pods in Namespace space1 . Outgoing traffic not affected.
+
+The NetworkPolicies should still allow outgoing DNS traffic on port 53 TCP and UDP.
+
+
+Solution :
+=========
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: np
+  namespace: space1
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+     - namespaceSelector:
+        matchLabels:
+         kubernetes.io/metadata.name: space2
+  - ports:
+    - port: 53
+      protocol: TCP
+    - port: 53
+      protocol: UDP
+
+----
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: np
+  namespace: space2
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+   - from:
+     - namespaceSelector:
+        matchLabels:
+         kubernetes.io/metadata.name: space1
+
+Verification :
+=============
+# these should work
+k -n space1 exec app1-0 -- curl -m 1 microservice1.space2.svc.cluster.local
+k -n space1 exec app1-0 -- curl -m 1 microservice2.space2.svc.cluster.local
+k -n space1 exec app1-0 -- nslookup tester.default.svc.cluster.local
+k -n kube-system exec -it validate-checker-pod -- curl -m 1 app1.space1.svc.cluster.local
+
+# these should not work
+k -n space1 exec app1-0 -- curl -m 1 tester.default.svc.cluster.local
+k -n kube-system exec -it validate-checker-pod -- curl -m 1 microservice1.space2.svc.cluster.local
+k -n kube-system exec -it validate-checker-pod -- curl -m 1 microservice2.space2.svc.cluster.local
+k -n default run nginx --image=nginx:1.21.5-alpine --restart=Never -i --rm  -- curl -m 1 microservice1.space2.svc.cluster.local
+
+
+# Details about running pods & svcs
+controlplane:~$ kubectl get svc
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP   24d
+tester       ClusterIP   10.108.13.147   <none>        80/TCP    48m
+controlplane:~$ kubectl get svc -n space1
+NAME   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+app1   ClusterIP   10.108.135.24   <none>        80/TCP    48m
+controlplane:~$ kubectl get svc -n space2
+NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+microservice1   ClusterIP   10.97.90.176    <none>        80/TCP    48m
+microservice2   ClusterIP   10.100.157.85   <none>        80/TCP    48m
+controlplane:~$ 
+controlplane:~$ 
+controlplane:~$ kubectl get pods
+NAME       READY   STATUS    RESTARTS   AGE
+tester-0   1/1     Running   0          53m
+controlplane:~$ kubectl get pods -n space1
+NAME     READY   STATUS    RESTARTS   AGE
+app1-0   1/1     Running   0          53m
+controlplane:~$ kubectl get pods -n space2
+NAME              READY   STATUS    RESTARTS   AGE
+microservice1-0   1/1     Running   0          53m
+microservice2-0   1/1     Running   0          53m
+controlplane:~$ 
