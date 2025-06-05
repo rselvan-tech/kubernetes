@@ -50,5 +50,3 @@ k auth can-i list pods --as system:serviceaccount:ns1:pipeline -A # YES
 k auth can-i list pods --as system:serviceaccount:ns2:pipeline -A # YES
 k auth can-i list secrets --as system:serviceaccount:ns2:pipeline -A # NO (default view-role doesn't allow)
 
-
-+
