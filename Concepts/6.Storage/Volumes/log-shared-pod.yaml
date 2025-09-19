@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: log-shared-pod
+spec:
+  containers:
+    - name: producer
+      image: busybox
+      command: ["/bin/sh","-c"]
+      args: ["while true; do echo $(date) >> /var/log/app/app.log; sleep 2; done"]
+      volumeMounts:
+        - mountPath: /var/log/app
+          name: log-vol
+    - name: consumer
+      image: busybox
+      command: ["/bin/sh","-c"]
+      args: ["tail -f /var/log/app/app.log"]
+      volumeMounts:
+        - mountPath: /var/log/app
+          name: log-vol
+  volumes:
+    - name: log-vol
+      emptyDir: {}
