@@ -1,0 +1,34 @@
+# customer‑frontend.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-customer
+  namespace: shop
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend-customer
+  template:
+    metadata:
+      labels:
+        app: frontend-customer
+    spec:
+      containers:
+      - name: customer-app
+        image: gcr.io/google-samples/hello-app:1.0
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-customer
+  namespace: shop
+spec:
+  type: ClusterIP
+  selector:
+    app: frontend-customer
+  ports:
+    - port: 80
+      targetPort: 8080
