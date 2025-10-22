@@ -40,6 +40,13 @@ spec:
                 name: report-svc 
                 port: 
                   number: 80
+          - path: /users
+            pathType: Prefix 
+            backend:
+              service:
+                name: frontend-admin 
+                port:
+                  number: 80
           - path: /
             pathType: Prefix 
             backend:
