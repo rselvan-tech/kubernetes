@@ -1,0 +1,20 @@
+Qn: Create a Pod manifest that requests 100m CPU and 256Mi memory, and limits CPU to 500m and memory to 512Mi.
+
+Solution:
+
+apiVersion: v1
+kind: Pod
+metadata:
+    name: my-busybox
+spec:
+    containers:
+        - name: busybox
+          image: busybox
+          command: ["sleep","500"]
+          resources:
+            requests:
+                cpu: "100m"
+                memory: "256Mi"
+            limits:
+                cpu: "500m"
+                memory: "512Mi"
