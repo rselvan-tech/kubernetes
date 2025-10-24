@@ -1,0 +1,17 @@
+LimitRange
+Qn: Create a LimitRange that sets default memory requests and limits for containers in a namespace.
+
+Solution :-
+
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: lr-default
+  namespace: default
+spec:
+  limits:
+    - type: Container
+      default:
+        memory: "200M"
+      defaultRequest:
+        memory: "100M"
