@@ -1,0 +1,10 @@
+Qn : Create a PriorityClass named high-priority, a value of 100000, and a preemption policy of PreemptLowerPriority. Do not set this class as a global default.
+
+Solution :
+
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority
+preemptionPolicy: PreemptLowerPriority
+value: 100000
