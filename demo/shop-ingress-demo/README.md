@@ -14,7 +14,9 @@ minikube start -p flannel-cluster --nodes=3 --cpus=4 --memory=4096 --cni=flannel
 2. Install MetalLB
 
 kubectl apply ‑f metallb/metallb-ns.yaml  
+
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.15.2/config/manifests/metallb-native.yaml 
+
 kubectl apply ‑f metallb/metallb-pool.yaml  
 
 
